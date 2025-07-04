@@ -2,7 +2,7 @@ from loaders.pdf_loader import load_pdf
 from loaders.ocr_loader import ocr_pdf
 from loaders.url_loader import download_pdf
 from chains.summarization_chain import get_summary_chain
-from chains.QA_chain import build_qa_chain
+# from chains.QA_chain import build_qa_chain
 from vector_store.chroma_db import create_vector_store, delete_vector_store
 from utils.text_splitter import split_text
 from feedback.feedback_handler import get_feedback
@@ -16,12 +16,13 @@ def process_document(state):
         file_path = state.get("file_path")
         try:
             text = load_pdf(file_path)
+            print("Document Loaded Successfully using pdf loader.")
         except:
             text = ocr_pdf(file_path)
+            print("Document Loaded Successfully using OCR loader.")
         # if os.path.exists(file_path):
         #     os.remove(file_path)
 
-        print("Document Loaded Successfully.")
         return {"text": text}
 
     elif action == "load_url":
@@ -29,13 +30,10 @@ def process_document(state):
         file_path = download_pdf(file_url)
         try:
             text = load_pdf(file_path)
+            print("Document Loaded Successfully using pdf loader.")
         except:
             text = ocr_pdf(file_path)
-        if text is None:
-            print("Failed to load document from URL.")
-        # if os.path.exists(file_path):
-        #     os.remove(file_path)
-        print("Document Downloaded and Loaded Successfully.")
+            print("Document Loaded Successfully using OCR loader.")
         return {"text": text}
 
     elif action == "delete_document":
@@ -50,7 +48,7 @@ def process_document(state):
             return {}
         chunks = split_text(text)
         create_vector_store(chunks)
-        print("🔄 Document refreshed successfully.")
+        print("Document refreshed successfully.")
         return {"text": text}
 
     elif action in ["ask_query"]:
@@ -69,18 +67,19 @@ def answer_query(state):
     text = state.get("text")
     if not text:
         print("No document loaded yet.")
-        return {}
+        return state
 
     chunks = split_text(text)
+    from vector_store.chroma_db import create_vector_store
+    from chains.QA_chain import get_qa_chain
+    from chains.summarization_chain import llm
     vector_store = create_vector_store(chunks)
+    qa_chain = get_qa_chain(vector_store, llm)
 
-    qa_chain = build_qa_chain(vector_store.as_retriever())
-
-    query = input("Ask your question: ")
-    answer = qa_chain.run(query)
-
-    print(f"\n💬 Answer: {answer}\n")
-    return {"answer": answer, "text": text}
+    question = input("Enter your question: ")
+    answer = qa_chain.run(question)
+    print(f"Answer: {answer}")
+    return {**state}
 
 def collect_feedback(state):
     feedback = get_feedback()

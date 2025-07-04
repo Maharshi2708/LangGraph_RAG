@@ -9,4 +9,4 @@ def ocr_pdf(file_path):
             text += pytesseract.image_to_string(page)
         return text
     except Exception as e:
-        print("OCR Extractiomn failed.")
+        print(f"OCR Extractiomn failed. {e}")
