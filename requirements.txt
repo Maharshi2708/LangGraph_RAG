@@ -1,0 +1,11 @@
+langchain
+lkangchain-community
+langchain-ollama
+langgraph
+chromadb
+tiktoken
+pypdf
+pytesseract
+pdf2image
+python-dotenv
+sentence-transformers
