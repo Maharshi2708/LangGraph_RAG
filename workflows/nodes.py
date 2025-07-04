@@ -2,7 +2,6 @@ from loaders.pdf_loader import load_pdf
 from loaders.ocr_loader import ocr_pdf
 from loaders.url_loader import download_pdf
 from chains.summarization_chain import get_summary_chain
-# from chains.QA_chain import build_qa_chain
 from vector_store.chroma_db import create_vector_store, delete_vector_store
 from utils.text_splitter import split_text
 from feedback.feedback_handler import get_feedback
@@ -20,9 +19,6 @@ def process_document(state):
         except:
             text = ocr_pdf(file_path)
             print("Document Loaded Successfully using OCR loader.")
-        # if os.path.exists(file_path):
-        #     os.remove(file_path)
-
         return {"text": text}
 
     elif action == "load_url":
@@ -34,6 +30,8 @@ def process_document(state):
         except:
             text = ocr_pdf(file_path)
             print("Document Loaded Successfully using OCR loader.")
+        if os.path.exists(file_path):
+            os.remove(file_path)
         return {"text": text}
 
     elif action == "delete_document":
